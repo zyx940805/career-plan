@@ -8,6 +8,8 @@ public class CareerPlanApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(CareerPlanApplication.class, args);
+        System.out.println("Hello");
+
     }
 
 }
