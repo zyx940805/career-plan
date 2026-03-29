@@ -1,23 +1,9 @@
 package com.career.plan.config;
 
-import com.baomidou.mybatisplus.annotation.DbType;
-import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
-import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
-import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@MapperScan("com.career.plan.mapper")
 public class MybatisPlusConfig {
-
-    /**
-     * 分页插件配置
-     */
-    @Bean
-    public MybatisPlusInterceptor mybatisPlusInterceptor() {
-        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
-        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
-        return interceptor;
-    }
+    // 分页插件暂时禁用，避免版本兼容问题
+    // 后续如需使用分页，请升级 mybatis-plus 到 3.5.9+ 并添加 mybatis-plus-jsqlparser 依赖
 }
