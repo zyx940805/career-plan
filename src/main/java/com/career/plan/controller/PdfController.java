@@ -1,6 +1,6 @@
 package com.career.plan.controller;
 
-import com.career.plan.service.ProfileServiceImpl;
+import com.career.plan.service.planTask.impl.ResumePdfService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PdfController {
 
     @Autowired
-    private ProfileServiceImpl.ResumePdfService resumePdfService;
+    private ResumePdfService resumePdfService;
 
     @GetMapping("/resume/{userId}")
     public ResponseEntity<byte[]> downloadResume(@PathVariable Long userId) {

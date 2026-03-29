@@ -2,6 +2,8 @@ package com.career.plan.controller;
 
 import com.career.plan.common.Result;
 import com.career.plan.dto.AgentDTO.*;
+import com.career.plan.service.agent.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -10,76 +12,121 @@ import java.util.*;
 @RequestMapping("/agent")
 public class AgentController {
 
-    // 4.2.1 解析输入 Agent
+    @Autowired
+    private ParseAgentService parseAgentService;
+    
+    @Autowired
+    private KeywordAgentService keywordAgentService;
+    
+    @Autowired
+    private JobRetrievalAgentService jobRetrievalAgentService;
+    
+    @Autowired
+    private JobProfileAgentService jobProfileAgentService;
+    
+    @Autowired
+    private StudentProfileAgentService studentProfileAgentService;
+    
+    @Autowired
+    private MatchAgentService matchAgentService;
+    
+    @Autowired
+    private PathPlanningAgentService pathPlanningAgentService;
+    
+    @Autowired
+    private ReportAgentService reportAgentService;
+    
+    @Autowired
+    private QAAgentService qaAgentService;
+    
+    @Autowired
+    private RepairAgentService repairAgentService;
+
     @PostMapping("/parse")
-    public Result<Map<String, Object>> parseInput(@RequestBody ParseRequest request) {
-        // TODO: 调用 LLM 解析逻辑
-        return Result.success(new HashMap<String, Object>() {{
-            put("user_query", request.getUserQuery());
-            put("repair_attempts", 0);
-        }});
+    public Result<ParseResponse> parseInput(@RequestBody ParseRequest request) {
+        ParseResponse response = parseAgentService.parseInput(request);
+        return Result.success(response);
     }
 
-    // 4.2.2 提取关键词 Agent
     @PostMapping("/extract_keyword")
-    public Result<Map<String, String>> extractKeyword(@RequestBody Map<String, String> request) {
-        // TODO: 从文本提取岗位关键词
-        return Result.success(Collections.singletonMap("keyword", "后端开发工程师"));
+    public Result<KeywordResponse> extractKeyword(@RequestBody KeywordRequest request) {
+        KeywordResponse response = keywordAgentService.extractKeywords(request);
+        return Result.success(response);
     }
 
-    // 4.2.3 岗位检索 Agent
     @PostMapping("/job_retrieval")
     public Result<List<JobRecord>> jobRetrieval(@RequestBody Map<String, String> request) {
-        // TODO: 搜索数据库或第三方岗位 API
-        return Result.success(new ArrayList<>());
+        String keyword = request.get("keyword");
+        String location = request.get("location");
+        String limitStr = request.get("limit");
+        Integer limit = limitStr != null ? Integer.parseInt(limitStr) : 10;
+        
+        List<JobRecord> jobs = jobRetrievalAgentService.retrieveJobs(keyword, location, limit);
+        return Result.success(jobs);
     }
 
-    // 4.2.4 岗位画像 Agent
     @PostMapping("/job_profile")
-    public Result<JobProfile> jobProfile(@RequestBody Map<String, Object> request) {
-        // TODO: 分析 JD 生成画像
-        return Result.success(new JobProfile());
+    public Result<JobProfile> jobProfile(@RequestBody JobRecord request) {
+        JobProfile profile = jobProfileAgentService.analyzeJobProfile(request);
+        return Result.success(profile);
     }
 
-    // 4.2.5 学生画像 Agent
     @PostMapping("/student_profile")
-    public Result<Map<String, Object>> studentProfile(@RequestBody Map<String, Object> request) {
-        // TODO: 分析简历生成学生画像
-        return Result.success(new HashMap<>());
+    public Result<StudentProfileResponse> studentProfile(@RequestBody Map<String, Object> request) {
+        String resumeText = (String) request.get("resumeText");
+        
+        StudentProfileResponse response;
+        if (resumeText != null && !resumeText.isEmpty()) {
+            response = studentProfileAgentService.createProfileFromResume(resumeText);
+        } else {
+            response = new StudentProfileResponse();
+            response.setCompletenessScore(0);
+            response.setCompetitivenessScore(0);
+        }
+        
+        return Result.success(response);
     }
 
-    // 4.2.6 人岗匹配 Agent
     @PostMapping("/match")
-    public Result<Map<String, Object>> match(@RequestBody MatchRequest request) {
-        // TODO: 计算匹配分、优势、差距
-        return Result.success(new HashMap<>());
+    public Result<MatchResponse> match(@RequestBody MatchRequest request) {
+        MatchResponse response = matchAgentService.calculateMatch(
+            request.getStudentProfile(), 
+            request.getJobProfile()
+        );
+        return Result.success(response);
     }
 
-    // 4.2.7 路径规划 Agent
     @PostMapping("/path_planning")
-    public Result<Map<String, Object>> pathPlanning(@RequestBody Map<String, Object> request) {
-        // TODO: 生成职业路线图
-        return Result.success(new HashMap<>());
+    public Result<PathPlanningResponse> pathPlanning(@RequestBody PathPlanningRequest request) {
+        PathPlanningResponse response = pathPlanningAgentService.generatePath(request);
+        return Result.success(response);
     }
 
-    // 4.2.8 报告生成 Agent
     @PostMapping("/report")
-    public Result<Map<String, Object>> generateReport(@RequestBody Map<String, Object> request) {
-        // TODO: 汇总数据生成完整 Markdown/JSON 报告
-        return Result.success(new HashMap<>());
+    public Result<ReportResponse> generateReport(@RequestBody ReportRequest request) {
+        if (request.getReportType() == null) {
+            request.setReportType("markdown");
+        }
+        if (request.getIncludeCharts() == null) {
+            request.setIncludeCharts(true);
+        }
+        if (request.getTemplate() == null) {
+            request.setTemplate("professional");
+        }
+        
+        ReportResponse response = reportAgentService.generateReport(request);
+        return Result.success(response);
     }
 
-    // 4.2.9 质量复核 Agent
     @PostMapping("/qa")
-    public Result<Map<String, Object>> qaCheck(@RequestBody QARequest request) {
-        // TODO: 检查报告逻辑性与完整性
-        return Result.success(new HashMap<>());
+    public Result<QAResponse> qaCheck(@RequestBody QARequest request) {
+        QAResponse response = qaAgentService.qualityCheck(request);
+        return Result.success(response);
     }
 
-    // 4.2.10 修复报告 Agent
     @PostMapping("/repair")
-    public Result<Map<String, Object>> repairReport(@RequestBody Map<String, Object> request) {
-        // TODO: 根据 QA 建议修正报告
-        return Result.success(new HashMap<>());
+    public Result<RepairResponse> repairReport(@RequestBody RepairRequest request) {
+        RepairResponse response = repairAgentService.repairReport(request);
+        return Result.success(response);
     }
 }

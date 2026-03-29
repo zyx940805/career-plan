@@ -1,4 +1,4 @@
-package com.career.plan.service;
+package com.career.plan.service.planTask;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.career.plan.entity.PlanTask;
